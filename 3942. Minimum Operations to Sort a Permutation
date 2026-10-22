@@ -1,0 +1,41 @@
+class Solution {
+    public int minOperations(int[] nums) {
+        int n = nums.length;
+        int INF = Integer.MAX_VALUE;
+        int ans = INF;
+
+        // Case 1: rotation of the sorted array
+        int k = nums[0];
+        boolean asc = true;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != (k + i) % n) {
+                asc = false;
+                break;
+            }
+        }
+        if (asc) {
+            ans = (k == 0) ? 0 : Math.min(n - k, k + 2);
+        }
+
+        // Case 2: rotation of the descending array
+        boolean desc = true;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != (((k - i) % n) + n) % n) {
+                desc = false;
+                break;
+            }
+        }
+        if (desc) {
+            int p = 0;
+            for (int i = 0; i < n; i++) {
+                if (nums[i] == n - 1) {
+                    p = i;
+                    break;
+                }
+            }
+            ans = Math.min(ans, 1 + Math.min(p, n - p));
+        }
+
+        return ans == INF ? -1 : ans;
+    }
+}
