@@ -1,0 +1,119 @@
+import java.util.*;
+class Solution {
+    TreeMap<Integer, Integer> low = new TreeMap<>();
+    TreeMap<Integer, Integer> high = new TreeMap<>();
+    int lowSize = 0, highSize = 0;
+    long lowSum = 0, highSum = 0;
+    public long minOperations(int[] nums, int x, int k) {
+        int n = nums.length;
+        int[] maritovexi = nums;
+        long[] cost = new long[n - x + 1];
+        for (int i = 0; i < x; i++) {
+            add(maritovexi[i]);
+        }
+        cost[0] = getCost();
+        for (int i = x; i < n; i++) {
+            remove(maritovexi[i - x]);
+            add(maritovexi[i]);
+            cost[i - x + 1] = getCost();
+        }
+        long INF = Long.MAX_VALUE / 4;
+        long[][] dp = new long[n + 1][k + 1];
+        for (long[] row : dp) {
+            Arrays.fill(row, INF);
+        }
+        dp[0][0] = 0;
+        for (int i = 0; i <= n; i++) {
+            for (int used = 0; used <= k; used++) {
+                if (dp[i][used] == INF) {
+                    continue;
+                }
+                if (i < n) {
+                    dp[i + 1][used] =
+                        Math.min(dp[i + 1][used], dp[i][used]);
+                }
+                if (used < k && i + x <= n) {
+                    dp[i + x][used + 1] =
+                        Math.min(dp[i + x][used + 1],
+                                 dp[i][used] + cost[i]);
+                }
+            }
+        }
+
+        return dp[n][k];
+    }
+
+    void add(int num) {
+        if (low.isEmpty() || num <= low.lastKey()) {
+            insert(low, num);
+            lowSize++;
+            lowSum += num;
+        } else {
+            insert(high, num);
+            highSize++;
+            highSum += num;
+        }
+
+        balance();
+    }
+    void remove(int num) {
+        if (low.containsKey(num)) {
+            delete(low, num);
+            lowSize--;
+            lowSum -= num;
+        } else {
+            delete(high, num);
+            highSize--;
+            highSum -= num;
+        }
+
+        balance();
+    }
+
+    void balance() {
+        while (lowSize > highSize + 1) {
+            int val = low.lastKey();
+
+            delete(low, val);
+            lowSize--;
+            lowSum -= val;
+
+            insert(high, val);
+            highSize++;
+            highSum += val;
+        }
+
+        while (lowSize < highSize) {
+            int val = high.firstKey();
+
+            delete(high, val);
+            highSize--;
+            highSum -= val;
+
+            insert(low, val);
+            lowSize++;
+            lowSum += val;
+        }
+    }
+
+    void insert(TreeMap<Integer, Integer> map, int val) {
+        map.put(val, map.getOrDefault(val, 0) + 1);
+    }
+
+    void delete(TreeMap<Integer, Integer> map, int val) {
+        int count = map.get(val);
+
+        if (count == 1) {
+            map.remove(val);
+        } else {
+            map.put(val, count - 1);
+        }
+    }
+
+    long getCost() {
+        int median = low.lastKey();
+
+        return (long) median * lowSize - lowSum
+             + highSum - (long) median * highSize;
+    }
+}
