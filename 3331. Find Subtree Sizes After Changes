@@ -1,0 +1,39 @@
+class Solution {
+    public int[] findSubtreeSizes(int[] parent, String s) {
+        int n=parent.length;
+        List<Integer>[] tree=new ArrayList[n];
+        for(int i=0;i<n;i++)tree[i]=new ArrayList<>();
+        for(int i=1;i<n;i++)tree[parent[i]].add(i);
+        int[] newParent=parent.clone();
+        int[] last=new int[26];
+        Arrays.fill(last,-1);
+        int[] prev=new int[n];
+        int[] stack=new int[2*n];
+        int top=0;
+        stack[top++]=0;
+        List<Integer> order=new ArrayList<>();
+        while(top>0){
+            int x=stack[--top];
+            if(x<0){
+                x=~x;
+                last[s.charAt(x)-'a']=prev[x];
+            }else{
+                int c=s.charAt(x)-'a';
+                prev[x]=last[c];
+                if(last[c]!=-1)newParent[x]=last[c];
+                last[c]=x;
+                order.add(x);
+                stack[top++]=~x;
+                for(int child:tree[x])stack[top++]=child;
+            }
+        }
+        int[] size=new int[n];
+        Arrays.fill(size,1);
+        for(int i=n-1;i>0;i--){
+            int x=order.get(i);
+            size[newParent[x]]+=size[x];
+        }
+        return size;
+        
+    }
+}
